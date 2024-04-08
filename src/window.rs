@@ -79,11 +79,6 @@ pub async fn run(event_loop: EventLoop<()>, window: Arc<Window>, cell_number: u3
                     wgpu_context.window.request_redraw();
                 }
 
-                WindowEvent::Resized(_) => {
-                    // should not be reachable in theory
-                    eprintln!("[FATAL]: App does not support resize.");
-                    target.exit()
-                }
                 _ => {}
             },
             _ => {}

@@ -68,7 +68,7 @@ impl WgpuContext {
                 &wgpu::DeviceDescriptor {
                     label: Some("Device descriptor"),
                     required_features: wgpu::Features::empty(),
-                    required_limits: wgpu::Limits::downlevel_webgl2_defaults(),
+                    required_limits: wgpu::Limits::downlevel_defaults(),
                 },
                 None,
             )
@@ -177,13 +177,13 @@ impl WgpuContext {
             });
 
         // create render pipeline with bind groups
-
+        const SIZE_OF_F32: u64 = std::mem::size_of::<f32>() as u64;
         let render_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 entries: &[
                     wgpu::BindGroupLayoutEntry {
                         binding: 0,
-                        visibility: wgpu::ShaderStages::VERTEX, // only vertex need an access to global parameters
+                        visibility: wgpu::ShaderStages::VERTEX_FRAGMENT, // only vertex need an access to global parameters
                         ty: wgpu::BindingType::Buffer {
                             ty: wgpu::BufferBindingType::Uniform,
                             has_dynamic_offset: false,
@@ -195,13 +195,13 @@ impl WgpuContext {
                     },
                     wgpu::BindGroupLayoutEntry {
                         binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT, // only the fragment need to have access to the cell color
+                        visibility: wgpu::ShaderStages::VERTEX_FRAGMENT, // only the fragment need to have access to the cell color
                         ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
+                            ty: wgpu::BufferBindingType::Storage { read_only: true },
                             has_dynamic_offset: false,
                             min_binding_size: wgpu::BufferSize::new(
                                 // shader variable 'colormap' is of type array<[u32; u32; u32]> of len NUM_COLOR
-                                (NUM_COLOR as u64) * 3 * SIZE_OF_U32,
+                                (NUM_COLOR as u64) * 3 * SIZE_OF_F32,
                             ),
                         },
                         count: None,
@@ -277,7 +277,7 @@ impl WgpuContext {
 
         let mut rng = WyRand::new();
         let initial_cell_data = (0..state.total_cell_number)
-            .map(|_| rng.generate_range(0_u32..=2) * 2)
+            .map(|_| rng.generate_range(0_u32..=2))
             .collect::<Vec<u32>>();
 
         // creates two buffers of cell data each of size total_cell_number
@@ -287,7 +287,7 @@ impl WgpuContext {
         for i in 0..2 {
             cells_buffers.push(
                 device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: Some(&format!("Particle Buffer {i}")),
+                    label: Some(&format!("Cell Buffer {i}")),
                     contents: bytemuck::cast_slice(&initial_cell_data),
                     usage: wgpu::BufferUsages::VERTEX
                         | wgpu::BufferUsages::STORAGE
@@ -317,7 +317,7 @@ impl WgpuContext {
                         resource: cells_buffers[(i + 1) % 2].as_entire_binding(), // bind to opposite buffer
                     },
                 ],
-                label: None,
+                label: Some(&format!("compute bind group {i}")),
             }));
         }
 
@@ -332,10 +332,10 @@ impl WgpuContext {
         let colormap_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Colormap Buffer"),
             contents: bytemuck::bytes_of(&COLORMAP),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
         });
         let draw_bind_groups = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &compute_bind_group_layout,
+            layout: &render_bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
@@ -346,7 +346,7 @@ impl WgpuContext {
                     resource: colormap_buffer.as_entire_binding(),
                 },
             ],
-            label: None,
+            label: Some("draw bind group"),
         });
 
         // calculates number of work groups from CELLS_PER_GROUP constant

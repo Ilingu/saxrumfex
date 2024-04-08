@@ -37,12 +37,12 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
 
   var enemies: u32 = number_array_with_capacity(params.number_colors);
   // Initialize enemy count to 0
-  for (var i = 0; i < params.number_colors; i++) {
-      enemies = number_array_set(enemies, i, 0);
+  for (var i = 0u; i < params.number_colors; i++) {
+      enemies = number_array_set(enemies, i, 0u);
   }
 
-  for (var xi = 0; xi < 3; xi++) {
-    for (var yi = 0; yi < 3; xi++) {
+  for (var xi = 0u; xi < 3; xi++) {
+    for (var yi = 0u; yi < 3; xi++) {
       let xoff: i32 = i32(xi)-1;
       let yoff: i32 = i32(yi)-1;
 
@@ -54,17 +54,25 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
       // neighbor position
       let xnei = x+xoff;
       let ynei = y+yoff;
-      let neighbor_index = from_pos_to_index(xnei, ynei);
 
       // check if out of bound
+      if xnei < 0 || xnei >= i32(params.cell_number_x){
+        continue;
+      }
+      if ynei < 0 || ynei >= i32(params.cell_number_y) {
+        continue;
+      }
+
+      let neighbor_index = from_pos_to_index(u32(xnei), u32(ynei));
+
+      // check if out of bound #2 (should be useless and removed)
       if neighbor_index < 0 || neighbor_index >= params.total_cell_number {
         continue;
       }
 
       let neighbor_color = cellSrc[neighbor_index];
       if is_enemy(cell_color, neighbor_color) {
-        enemies[neighbor_color] += 1;
-        enemies = number_array_set(enemies, neighbor_color, number_array_get(enemies, neighbor_color)+1);
+        enemies = number_array_set(enemies, neighbor_color, number_array_get(enemies, neighbor_color)+1u);
         if number_array_get(enemies, neighbor_color) > number_of_best_enemy {
           best_enemy_color = neighbor_color;
           number_of_best_enemy = number_array_get(enemies, neighbor_color);
@@ -97,7 +105,10 @@ fn from_pos_to_index(col: u32, raw: u32) -> u32 {
 
 // array in number
 
-/// n must be >= 1
+fn number_array_with_capacity(n: u32) -> u32 {
+    return power(10u, n);
+}
+
 fn power(base: u32, exponent: u32) -> u32 {
     var result: u32 = 1;
     var x: u32 = base;
@@ -114,13 +125,9 @@ fn power(base: u32, exponent: u32) -> u32 {
     return result;
 }
 
-fn number_array_with_capacity(n: u32) -> u32 {
-    return power(10, n);
-}
-
 /// no out of bound checking
 fn number_array_get(arr: u32, index: u32) -> u32 {
-    return (arr / power(10, index)) % 10;
+    return (arr / power(10u, index)) % 10;
 }
 
 fn number_array_set(arr: u32, index: u32, new_num: u32) -> u32 {
@@ -129,9 +136,9 @@ fn number_array_set(arr: u32, index: u32, new_num: u32) -> u32 {
     let curr_num: u32 = number_array_get(arr, index);
     let diff: i32 = i32(new_num) - i32(curr_num);
     if diff < 0 {
-        new_arr -= u32(-diff) * power(10, index);
+        new_arr -= u32(-diff) * power(10u, index);
     } else {
-        new_arr += u32(diff) * power(10, index);
+        new_arr += u32(diff) * power(10u, index);
     }
     return new_arr;
 }
