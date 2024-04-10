@@ -1,4 +1,8 @@
-use std::{sync::Arc, thread, time::Duration};
+use std::{
+    sync::Arc,
+    thread,
+    time::{Duration, Instant},
+};
 
 use winit::{
     event::{Event, KeyEvent, WindowEvent},
@@ -41,7 +45,15 @@ pub async fn run(event_loop: EventLoop<()>, window: Arc<Window>, cell_number: u3
                     }
                 }
                 WindowEvent::RedrawRequested => {
-                    thread::sleep(Duration::from_millis(100));
+                    // regulate frame rendering at 60fps max
+                    let since_last_frame = wgpu_context.since_last_frame.elapsed();
+                    if since_last_frame.as_micros() < 16666 {
+                        thread::sleep(Duration::from_micros(
+                            16666 - since_last_frame.as_micros() as u64,
+                        ));
+                    }
+
+                    wgpu_context.since_last_frame = Instant::now();
                     // aquire new frame
                     let frame = match wgpu_context.surface.get_current_texture() {
                         Ok(frame) => frame,

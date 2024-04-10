@@ -1,4 +1,8 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{
+    borrow::Cow,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use crate::app::AppState;
 use nanorand::{Rng, WyRand};
@@ -37,6 +41,7 @@ pub struct WgpuContext {
     // extra
     work_group_count: u32,
     pub frame_num: usize,
+    pub since_last_frame: Instant,
 }
 
 impl WgpuContext {
@@ -375,6 +380,7 @@ impl WgpuContext {
 
             work_group_count,
             frame_num: 0,
+            since_last_frame: Instant::now(),
         }
     }
 

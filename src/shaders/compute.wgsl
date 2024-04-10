@@ -76,7 +76,7 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     }
   }
 
-  if number_of_best_enemy >= 2 {
+  if number_of_best_enemy >= params.number_colors {
     cell_color = best_enemy_color;
   }
 

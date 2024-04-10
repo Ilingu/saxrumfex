@@ -6,7 +6,7 @@ use std::sync::Arc;
 use window::run;
 use winit::event_loop::EventLoop;
 
-const WINDOW_SIZE: u32 = 900;
+const WINDOW_SIZE: u32 = 1000;
 
 pub fn main() {
     let event_loop = EventLoop::new().unwrap();
@@ -21,5 +21,5 @@ pub fn main() {
     let window = builder.build(&event_loop).unwrap();
     let window = Arc::new(window);
     env_logger::builder().format_timestamp_nanos().init();
-    pollster::block_on(run(event_loop, window, 1000));
+    pollster::block_on(run(event_loop, window, 10000));
 }
