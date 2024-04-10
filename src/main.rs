@@ -21,5 +21,5 @@ pub fn main() {
     let window = builder.build(&event_loop).unwrap();
     let window = Arc::new(window);
     env_logger::builder().format_timestamp_nanos().init();
-    pollster::block_on(run(event_loop, window, 100));
+    pollster::block_on(run(event_loop, window, 1000));
 }

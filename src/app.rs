@@ -22,7 +22,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(w: u32, h: u32, wanted_cell_number: u32) -> Self {
         let cell_area = w * h / wanted_cell_number;
-        let cell_dimension = (cell_area as f64).sqrt().floor() as u32;
+        let cell_dimension = (cell_area as f64).sqrt().ceil() as u32;
         let (cwidth, cheihgt) = (w / cell_dimension, h / cell_dimension);
 
         let real_cell_number = cwidth * cheihgt;

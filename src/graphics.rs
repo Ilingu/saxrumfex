@@ -261,8 +261,10 @@ impl WgpuContext {
 
         // buffer for the four 2d square vertices of each instance
 
-        /// 4 points in ccw order: (-1.0, 1.0), (-1.0, -1.0), (1.0, -1.0), (1.0, 1.0) representing a single square taking all screen
-        const SQUARE_VERTEX: [f32; 8] = [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0];
+        /// 4 points in ccw order: (-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (1.0, 1.0)  representing a single square taking all screen
+        const SQUARE_VERTEX: [f32; 12] = [
+            -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+        ];
         let min_number_of_cell = state.cell_number_x.min(state.cell_number_y);
 
         // square scaled down by a factor of the minimum
@@ -425,7 +427,7 @@ impl WgpuContext {
             rpass.set_vertex_buffer(0, self.cells_buffers[(self.frame_num + 1) % 2].slice(..));
             // the four instance-local vertices
             rpass.set_vertex_buffer(1, self.vertices_buffer.slice(..));
-            rpass.draw(0..4, 0..state.total_cell_number);
+            rpass.draw(0..6, 0..state.total_cell_number);
         }
         command_encoder.pop_debug_group();
 

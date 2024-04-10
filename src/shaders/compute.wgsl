@@ -36,13 +36,8 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
   var number_of_best_enemy: u32 = 0;
 
   var enemies: u32 = number_array_with_capacity(params.number_colors);
-  // Initialize enemy count to 0
-  for (var i = 0u; i < params.number_colors; i++) {
-      enemies = number_array_set(enemies, i, 0u);
-  }
-
   for (var xi = 0u; xi < 3; xi++) {
-    for (var yi = 0u; yi < 3; xi++) {
+    for (var yi = 0u; yi < 3; yi++) {
       let xoff: i32 = i32(xi)-1;
       let yoff: i32 = i32(yi)-1;
 

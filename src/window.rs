@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, thread, time::Duration};
 
 use winit::{
     event::{Event, KeyEvent, WindowEvent},
@@ -41,6 +41,7 @@ pub async fn run(event_loop: EventLoop<()>, window: Arc<Window>, cell_number: u3
                     }
                 }
                 WindowEvent::RedrawRequested => {
+                    thread::sleep(Duration::from_millis(100));
                     // aquire new frame
                     let frame = match wgpu_context.surface.get_current_texture() {
                         Ok(frame) => frame,
