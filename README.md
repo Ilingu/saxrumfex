@@ -1,5 +1,9 @@
 # [SAXRUMFEX]: 3 state cellular automata study
 
+<div align="center">
+  <img src="https://github.com/Ilingu/saxrumfex/assets/57411599/0538d8b6-f01c-4840-a181-a8d0ca29322b" />
+</div>
+
 ## Origin
 
 Saw [this video](https://youtu.be/TvZI6Xc0J1Y) on youtube, it blowed my mind so I wanted to do the same
