@@ -26,18 +26,26 @@ fn main_vs(
 ) -> VertexOutput {
   let rawcolpos = from_index_to_pos(cell_index);
 
-  let pos = vec2<f32>(-1.0+(2.0/(f32(params.cell_number_x)-1.0))*f32(rawcolpos.x), -1.0+(2.0/(f32(params.cell_number_y)-1.0))*f32(rawcolpos.y));
+  let offset = 0.5*vec2<f32>(
+   2.0-f32(params.cell_number_x-1u)*f32(params.cell_dimension)*(2.0/(f32(params.width))),
+   2.0-f32(params.cell_number_y-1u)*f32(params.cell_dimension)*(2.0/(f32(params.height))),
+  );
+
+  let pos = vec2<f32>(
+    -1.0+f32(rawcolpos.x)*f32(params.cell_dimension)*(2.0/(f32(params.width))),
+    -1.0+f32(rawcolpos.y)*f32(params.cell_dimension)*(2.0/(f32(params.height)))
+  );
 
   var out: VertexOutput;
   out.color_index = color_index;
-  out.position = vec4<f32>(pos + vspos, 0.0, 1.0);
+  out.position = vec4<f32>(offset + pos + vspos, 0.0, 1.0);
 
   return out;
 }
 
 @fragment
 fn main_fs(in: VertexOutput) -> @location(0) vec4<f32> {
-  let index_start = in.color_index * params.number_colors;
+  let index_start = in.color_index * 3;
   return vec4<f32>(colormap[index_start], colormap[index_start+1], colormap[index_start+2], 1.0);
 }
 

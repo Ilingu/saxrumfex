@@ -18,7 +18,7 @@ struct SimParams {
 @group(0) @binding(2) var<storage, read_write> cellDst: array<u32>;
 
 @compute
-@workgroup_size(64)
+@workgroup_size(50)
 fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
   let index = global_invocation_id.x; // cell index
   if (index >= params.total_cell_number) {
@@ -95,7 +95,7 @@ fn from_index_to_pos(index: u32) -> vec2<u32> {
 }
 
 fn from_pos_to_index(col: u32, raw: u32) -> u32 {
-  return raw * params.cell_number_y + col;
+  return raw * params.cell_number_x + col;
 }
 
 // array in number

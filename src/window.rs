@@ -13,13 +13,12 @@ use winit::{
 
 use crate::{app::AppState, graphics::WgpuContext};
 
-pub async fn run(event_loop: EventLoop<()>, window: Arc<Window>, cell_number: u32) {
-    let (width, height) = {
-        let win_size = window.inner_size();
-        (win_size.width, win_size.height)
-    };
+pub async fn run(event_loop: EventLoop<()>, window: Arc<Window>, state: AppState) {
+    // let (width, height) = {
+    //     let win_size = window.inner_size();
+    //     (win_size.width, win_size.height)
+    // };
 
-    let state = AppState::new(width, height, cell_number);
     let mut wgpu_context = WgpuContext::new(window, &state).await;
 
     let main_window_id = wgpu_context.window.id();

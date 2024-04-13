@@ -1,18 +1,11 @@
-use std::{
-    borrow::Cow,
-    sync::Arc,
-    time::{Duration, Instant},
-};
+use std::{borrow::Cow, sync::Arc, time::Instant};
 
 use crate::app::AppState;
 use nanorand::{Rng, WyRand};
 use wgpu::{util::DeviceExt, TextureView};
 use winit::window::Window;
 
-const CELLS_PER_GROUP: u32 = 64; // lower is better perfomance, but too low is complete madness
-
-/// number of distinc color in our simulation
-const NUM_COLOR: u32 = 3;
+const CELLS_PER_GROUP: u32 = 50; // lower is better perfomance, but too low is complete madness
 
 pub struct WgpuContext {
     /// winnit window representation
@@ -118,7 +111,7 @@ impl WgpuContext {
             state.cell_number_x,
             state.cell_number_y,
             state.total_cell_number,
-            NUM_COLOR,
+            state.color_number,
         ];
         let sim_param_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Simulation Parameter Buffer"),
@@ -206,7 +199,7 @@ impl WgpuContext {
                             has_dynamic_offset: false,
                             min_binding_size: wgpu::BufferSize::new(
                                 // shader variable 'colormap' is of type array<[u32; u32; u32]> of len NUM_COLOR
-                                (NUM_COLOR as u64) * 3 * SIZE_OF_F32,
+                                (state.color_number as u64) * 3 * SIZE_OF_F32,
                             ),
                         },
                         count: None,
@@ -266,7 +259,7 @@ impl WgpuContext {
 
         // buffer for the four 2d square vertices of each instance
 
-        /// 4 points in ccw order: (-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (1.0, 1.0)  representing a single square taking all screen
+        /// 6 points in ccw order: (-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (1.0, 1.0)  representing a single square taking all screen
         const SQUARE_VERTEX: [f32; 12] = [
             -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
         ];
@@ -284,7 +277,7 @@ impl WgpuContext {
 
         let mut rng = WyRand::new();
         let initial_cell_data = (0..state.total_cell_number)
-            .map(|_| rng.generate_range(0_u32..=2))
+            .map(|_| rng.generate_range(0_u32..state.color_number))
             .collect::<Vec<u32>>();
 
         // creates two buffers of cell data each of size total_cell_number
@@ -330,15 +323,9 @@ impl WgpuContext {
 
         // bind group for draw shader
 
-        #[rustfmt::skip]
-        const COLORMAP: [f32; 9] = [
-            1.0,0.0,0.0, // red
-            0.0,1.0,0.0, // green
-            0.0,0.0,1.0  // blue
-        ];
         let colormap_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Colormap Buffer"),
-            contents: bytemuck::bytes_of(&COLORMAP),
+            contents: bytemuck::cast_slice(&state.colormap),
             usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
         });
         let draw_bind_groups = device.create_bind_group(&wgpu::BindGroupDescriptor {
